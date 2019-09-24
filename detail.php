@@ -1,3 +1,69 @@
+<?php
+// SDK de Mercado Pago
+require 'vendor/autoload.php';
+
+// Agrega credenciales
+MercadoPago\SDK::setAccessToken('APP_USR-6317427424180639-090914-5c508e1b02a34fcce879a999574cf5c9-469485398');
+
+// Crea un objeto de preferencia
+$preference = new MercadoPago\Preference();
+
+// Crea un ítem en la preferencia
+$item = new MercadoPago\Item();
+$item->id =           "1234";
+$item->picture_url =  "https://izus-mp-commerce-php.herokuapp.com/" . $_POST['img'];
+$item->title =        $_POST['title'];
+$item->description =  "Dispositivo móvil de Tienda e-commerce";
+$item->quantity =     1;
+$item->unit_price =   $_POST['price'];
+$preference->items = array($item);
+
+$payer = new MercadoPago\Payer();
+$payer->name =     "Lalo";
+$payer->surname =  "Landa";
+$payer->email =    "test_user_63274575@testuser.com";
+
+$payer->address = array(
+    "zip_code"      => "1111",
+    "street_name"   => "Falsa",
+    "street_number" => "123"
+);
+
+$payer->identification = array(
+    "number"  =>  "12345678",
+    "type" => "DNI"
+);
+
+$payer->phone = array(
+    "area_code"  =>  "011",
+    "number" =>     "2222-3333"
+);
+
+$preference->payer = $payer;
+
+$preference->payment_methods = array(
+  "excluded_payment_methods" => array(
+    array("id" => "master")
+  ),
+  "excluded_payment_types" => array(
+    array("id" => "ticket")
+  ),
+  "installments" => 6
+);
+
+$preference->back_urls = array(
+    "success" => "https://izus-mp-commerce-php.herokuapp.com/success.php",
+    "failure" => "https://izus-mp-commerce-php.herokuapp.com/failure.php",
+    "pending" => "https://izus-mp-commerce-php.herokuapp.com/pending.php"
+);
+$preference->auto_return = "approved";
+
+$preference->external_reference = "ABCD1234";
+
+$preference->save();
+
+?>
+
 <!DOCTYPE html>
 <html class="supports-animation supports-columns svg no-touch no-ie no-oldie no-ios supports-backdrop-filter as-mouseuser" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
@@ -56,6 +122,7 @@
                                 </div>
                                 <div class="pd-billboard-info">
                                     <h1 class="pd-billboard-header pd-util-compact-small-18">Tienda e-commerce</h1>
+                                    <p><?php echo $preference->id; ?></p>
                                 </div>
                             </div>
                         </div>
@@ -130,7 +197,12 @@
                                             <?php echo "$" . $_POST['unit'] ?>
                                         </h3>
                                     </div>
-                                    <button type="submit" class="mercadopago-button" formmethod="post">Pagar</button>
+                                    <form action="/success.php" method="POST">
+                                      <script
+                                       src="https://www.mercadopago.com.ar/integrations/v1/web-payment-checkout.js"
+                                       data-preference-id="<?php echo $preference->id; ?>">
+                                      </script>
+                                    </form>
                                 </div>
                             </div>
                         </div>
